@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -euo pipefail
+
+rm -rf Release-iphoneos Release-iphonesimulator
+
+mkdir -p Release-iphoneos Release-iphonesimulator
+
+FRAMEWORK=Sentry.framework
+FRAMEWORK_NAME=${FRAMEWORK%.framework}
+
+cp -a "$FRAMEWORK" "$FRAMEWORK.dSYM" Release-iphoneos
+lipo "$FRAMEWORK/$FRAMEWORK_NAME" -extract_family arm -extract_family arm64 -o "Release-iphoneos/$FRAMEWORK_NAME.framework/$FRAMEWORK_NAME"
+lipo "$FRAMEWORK.dSYM/Contents/Resources/DWARF/$FRAMEWORK_NAME" -extract_family arm -extract_family arm64 -o "Release-iphoneos/$FRAMEWORK_NAME.framework.dSYM/Contents/Resources/DWARF/$FRAMEWORK_NAME"
+
+cp -a "$FRAMEWORK" "$FRAMEWORK.dSYM" Release-iphonesimulator
+lipo "$FRAMEWORK/$FRAMEWORK_NAME" -extract_family i386 -extract_family x86_64 -o "Release-iphonesimulator/$FRAMEWORK_NAME.framework/$FRAMEWORK_NAME"
+lipo "$FRAMEWORK.dSYM/Contents/Resources/DWARF/$FRAMEWORK_NAME" -extract_family i386 -extract_family x86_64 -o "Release-iphonesimulator/$FRAMEWORK_NAME.framework.dSYM/Contents/Resources/DWARF/$FRAMEWORK_NAME"
+
+mv *.bcsymbolmap Release-iphoneos
+
+rm -rf "$FRAMEWORK" "$FRAMEWORK.dSYM"
